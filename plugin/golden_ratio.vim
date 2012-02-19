@@ -13,6 +13,17 @@ else
   unlet g:golden_ratio_autocommand
 endif
 
+" must not enable(wrap is global option)
+let g:golden_ratio_wrap_auto = get(g:, 'golden_ratio_wrap_auto', 0)
+
+let s:ignore_ftypes = {}
+if exists('g:golden_ratio_ignore_ftypes')
+  for key in g:golden_ratio_ignore_ftypes
+    let s:ignore_ftypes[key] = 1
+  endfor
+  unlet g:golden_ratio_ignore_ftypes
+endif
+
 function! s:golden_ratio_width()
   return &columns / 1.618
 endfunction
@@ -33,7 +44,7 @@ function! s:find_parallel_windows(current_window)
 endfunction
 
 function! s:resize_ignored_window(windows, ignored_width, ignored_height)
-  setl nowrap
+  if g:golden_ratio_wrap_auto | setl nowrap | endif
 
   if len(a:windows.width) > 0 && index(a:windows.width, winnr()) >= 0
     let l:width_size = a:ignored_width / len(a:windows.width)
@@ -67,7 +78,7 @@ endfunction
 function! s:resize_main_window(window,
       \ main_width, main_height,
       \ ignored_width, ignored_height)
-  setl wrap
+  if g:golden_ratio_wrap_auto | setl wrap | endif
 
   " Height has an special condition:
   " When there is only one window, or just windows
@@ -91,6 +102,7 @@ function! s:resize_main_window(window,
 endfunction
 
 function! s:resize_to_golden_ratio()
+  if get(s:ignore_ftypes, &filetype, 0) | return | endif
   if exists("b:golden_ration_resizing_ignored") &&
         \ b:golden_ratio_resizing_ignored
     return
